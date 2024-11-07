@@ -67,34 +67,12 @@ class _DockState extends State<Dock> with SingleTickerProviderStateMixin {
   int? draggedIndex;
   int? targetIndex;
   bool isOutsideRow = false;
-  late AnimationController _animationController;
-  late Animation<Offset> _dragAnimation;
 
   @override
   void initState() {
     super.initState();
     _items = widget.items.toList();
     _colors = widget.colors.toList();
-
-    // Initialize the animation controller
-    _animationController = AnimationController(
-      vsync: this,
-      duration:
-          const Duration(milliseconds: 200), // Set duration for easing effect
-    );
-    _dragAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, 0), // Change the end value during dragging
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut, // Use easeInOut for smooth easing
-    ));
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   @override
@@ -179,7 +157,7 @@ class _DockState extends State<Dock> with SingleTickerProviderStateMixin {
                   children: [
                     AnimatedSize(
                       duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeIn,
+                      curve: Curves.easeInOut,
                       child: Container(
                         width: index == targetIndex && !isOutsideRow ? 48 : 0,
                         height: index == targetIndex && !isOutsideRow ? 48 : 0,
@@ -197,18 +175,16 @@ class _DockState extends State<Dock> with SingleTickerProviderStateMixin {
                         setState(() {
                           draggedIndex = index;
                         });
-                        _animationController.forward();
                       },
                       onDraggableCanceled: (_, __) {
                         setState(() {
                           draggedIndex = null;
                           targetIndex = null;
                         });
-                        _animationController.reverse();
                       },
                       onDragUpdate: (details) {
-                        if (373 > details.localPosition.dy ||
-                            details.localPosition.dy > 479) {
+                        if (170 > details.localPosition.dy ||
+                            details.localPosition.dy > 270) {
                           setState(() {
                             isOutsideRow = true;
                           });
@@ -223,21 +199,17 @@ class _DockState extends State<Dock> with SingleTickerProviderStateMixin {
                           draggedIndex = null;
                           targetIndex = null;
                         });
-                        _animationController.reverse();
                       },
-                      feedback: SlideTransition(
-                        position: _dragAnimation,
-                        child: Container(
-                          constraints: const BoxConstraints(minWidth: 48),
-                          height: 48,
-                          margin: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: _colors[index],
-                          ),
-                          child: Center(
-                              child: Icon(_items[index], color: Colors.white)),
+                      feedback: Container(
+                        constraints: const BoxConstraints(minWidth: 48),
+                        height: 48,
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: _colors[index],
                         ),
+                        child: Center(
+                            child: Icon(_items[index], color: Colors.white)),
                       ),
                       childWhenDragging: const SizedBox(),
                       child: Container(
